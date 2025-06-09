@@ -1,0 +1,36 @@
+name: 'BitCraft Game Data'
+description: 'Fetches BitCraft game data (desc tables, etc) from STDB and saves BSATN to git.'
+inputs:
+  data-dir:
+    required: true
+    description: Root directory to put files in
+  bitcraft-spacetime-host:
+    required: true
+    description: Hostname of bitcraft-global module
+  stdb-auth:
+    required: false
+    description: Auth header value, anonymous if not provided
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: ${{ github.action_path }}/.nvmrc
+        cache: 'npm'
+    - run: npm ci
+      shell: bash
+    - run: rm -rf "${{ inputs.data-dir}}"/*
+      shell: bash
+    - uses: actions/checkout@v4
+      with:
+        repository: BitCraftToolBox/game_bindings
+        path: bindings
+        sparse-checkout: 'ts'
+    - run: mv ts bindings
+      shell: bash
+    - run: npm exec tsx game_data.ts
+      shell: bash
+      env:
+        DATA_DIR: ${{ inputs.data-dir }}
+        BITCRAFT_SPACETIME_HOST: ${{ inputs.bitcraft-spacetime-host }}
+        BITCRAFT_SPACETIME_AUTH: ${{ inputs.stdb-auth }}
