@@ -56,8 +56,10 @@ const onConnect = (conn: DbConnection, identity: Identity) => {
 
     const gho = process.env.GITHUB_OUTPUT;
     if (gho) {
-	fs.appendFileSync(gho, "updated_data=true\n")
+      fs.appendFileSync(gho, "updated_data=true\n")
     }
+  }).onError((ctx: any) => {
+    console.log(ctx.event ?? "Unknown error");
   }).subscribe(subscriptions);
 };
 
