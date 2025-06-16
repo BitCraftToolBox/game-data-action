@@ -1,4 +1,4 @@
-import {DbConnection, REMOTE_MODULE} from './bindings'
+import {DbConnection, REMOTE_MODULE} from './ts'
 import {AlgebraicType, BinaryWriter, Identity} from "@clockworklabs/spacetimedb-sdk";
 import * as fs from "node:fs";
 
@@ -53,6 +53,11 @@ const onConnect = (conn: DbConnection, identity: Identity) => {
     }
 
     conn.disconnect();
+
+    const gho = process.env.GITHUB_OUTPUT;
+    if (gho) {
+	fs.appendFileSync(gho, "updated_data=true\n")
+    }
   }).subscribe(subscriptions);
 };
 

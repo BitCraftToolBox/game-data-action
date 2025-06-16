@@ -10,27 +10,34 @@ inputs:
   stdb-auth:
     required: false
     description: Auth header value, anonymous if not provided
+outputs:
+  updated_data:
+    description: true if something was updated
+    value: ${{ steps.game-data.outputs.updated_data }}
 runs:
   using: "composite"
   steps:
     - uses: actions/setup-node@v4
-      with:
-        node-version-file: ${{ github.action_path }}/.nvmrc
-        cache: 'npm'
-    - run: npm ci
-      shell: bash
     - run: rm -rf "${{ inputs.data-dir}}"/*
       shell: bash
     - uses: actions/checkout@v4
       with:
-        repository: BitCraftToolBox/game_bindings
+        repository: BitCraftToolBox/BitCraft_Bindings
         path: bindings
         sparse-checkout: 'ts'
-    - run: mv ts bindings
+    - run: mv bindings/ts ${{ github.action_path }}/ts/
       shell: bash
+    - run: git apply bindings_index.ts.patch
+      shell: bash
+      working-directory: ${{ github.action_path }}
+    - run: npm ci
+      shell: bash
+      working-directory: ${{ github.action_path }}
     - run: npm exec tsx game_data.ts
+      id: game-data
       shell: bash
+      working-directory: ${{ github.action_path }}
       env:
-        DATA_DIR: ${{ inputs.data-dir }}
+        DATA_DIR: ${{ github.workspace }}/${{ inputs.data-dir }}
         BITCRAFT_SPACETIME_HOST: ${{ inputs.bitcraft-spacetime-host }}
         BITCRAFT_SPACETIME_AUTH: ${{ inputs.stdb-auth }}
